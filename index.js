@@ -79,19 +79,39 @@ servidor.delete("/tareas/borrar/:id([0-9]+)",async (peticion,respuesta,siguiente
     }
 });
 
-servidor.put("/tareas/editar/texto/:id([0-9]+)", (peticion,respuesta) => {
-    respuesta.send("PUT /tareas/editar/texto/:id");
-});
-
-servidor.put("/tareas/editar/estado/:id([0-9]+)", async (peticion,respuesta) => {
-   
+servidor.put("/tareas/editar/texto/:id([0-9]+)", async (peticion,respuesta) => {
     let {tarea} = peticion.body;
+
     if(tarea != undefined){
         tarea = tarea.toString();
     }
 
-    let valido= tarea !=undefined && tarea.trim() != "";
-   
+    let valido = tarea && tarea.trim() != ""; 
+
+    if(valido){
+        try{
+
+            let count = await editarTarea(peticion.params.id,tarea);
+    
+            if(count){
+                respuesta.status(204);
+                return respuesta.send("");
+            }
+    
+            siguiente();
+    
+        }catch(error){
+            respuesta.status(500);
+    
+            respuesta.json({ error : "error en el servidor" });
+        }
+        
+    }
+
+    siguiente(true);
+});
+
+servidor.put("/tareas/editar/estado/:id([0-9]+)", async (peticion,respuesta) => {
     try{
 
         let count = await editarEstado(peticion.params.id);
